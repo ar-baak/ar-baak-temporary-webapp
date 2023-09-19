@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 import pytz
 import re
 from lxml import html
+import logging
 
 HKJC_BASE_URL = "https://bet.hkjc.com"
 RSDATA_URL = "https://bet.hkjc.com/racing/script/rsdata.js?lang=en&date={date:%Y-%m-%d}"
@@ -215,7 +216,7 @@ def get_meeting_today() -> Dict:
     _ = 0
     while True:
         _ += 1
-        print(RSDATA_URL.format(date=TODAY) + ("&venue=ST" * (_ % 2)))
+        logging.info(RSDATA_URL.format(date=TODAY) + ("&venue=ST" * (_ % 2)))
         response = fetch_from_hkjc(
             RSDATA_URL.format(date=TODAY) + ("&venue=ST" * (_ % 2))
         ).text
@@ -223,12 +224,12 @@ def get_meeting_today() -> Dict:
             break
         else:
             time.sleep(random())
-            print("Invalid response!")
+            logging.info("Invalid response!")
 
     response = clean_meeting_response(response)
 
     if response["mtg_date"].date() != TODAY.date():
-        print("Races are not on today!")
+        logging.info("Races are not on today!")
         return None
 
     return response
@@ -263,7 +264,7 @@ def get_racecard_today(race_no: int, venue: str) -> List[Dict]:
                 card["race_num"] = race_no
                 responses.append(card)
             else:
-                print(f"Unexpected type: {type(card)}")
+                logging.info(f"Unexpected type: {type(card)}")
     return responses
 
 
@@ -277,7 +278,7 @@ def get_all_racecard_today(
             racecards.append(None)
             continue
 
-        print(f"Race {i}")
+        logging.info(f"Race {i}")
         response = None
         while True:
             _ = 0
@@ -287,7 +288,7 @@ def get_all_racecard_today(
                     racecards.append(get_racecard_today(race_no=i, venue=venue))
                     break
                 except IndexError:
-                    print("Retrying")
+                    logging.info("Retrying")
                     time.sleep(0.2)
                     continue
 
@@ -298,7 +299,7 @@ def process_hkjc_response(results: str) -> List[HKJCOdds]:
     all_odds = []
 
     for race_num, data in enumerate(results.strip().split("@@@")[1:]):
-        print(f"Processing race {race_num + 1}")
+        logging.info(f"Processing race {race_num + 1}")
         win_odds, place_odds = data.split("#")
 
         for win_match, place_match in zip(
@@ -311,7 +312,7 @@ def process_hkjc_response(results: str) -> List[HKJCOdds]:
             assert win_match["horse"] == place_match["horse"]
 
             if win_match["odds"] == "SCR":
-                print(
+                logging.info(
                     f"Race {race_num + 1} Horse {win_match.get('horse', 0)} scratched."
                 )
                 continue
