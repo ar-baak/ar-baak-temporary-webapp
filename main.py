@@ -503,6 +503,7 @@ def main():
         left=df_racecard,
         right=df_race_odds,
         on=["race_num", "num"],
+        how="left",
     )
     # df_hkjc = df_hkjc[["race_num", "num", "name", "jockeyName", "trainerName"]]
     df_hkjc = df_hkjc.rename(
@@ -541,6 +542,7 @@ def main():
         right=df_ctb_bet,
         left_on=["場", "號"],
         right_on=["race", "horse"],
+        how="left",
     )[
         [
             "場",
@@ -563,6 +565,7 @@ def main():
         right=df_ctb_lay,
         left_on=["場", "號"],
         right_on=["race", "horse"],
+        how="left",
     )[
         [
             "場",
