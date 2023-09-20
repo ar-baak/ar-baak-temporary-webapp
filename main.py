@@ -298,12 +298,12 @@ def get_all_racecard_today(
 def process_hkjc_response(results: str) -> List[HKJCOdds]:
     all_odds = []
 
-    logging.info("Full Results:")
-    logging.info(results)
+    print("Full Results:")
+    print(results)
     for race_num, data in enumerate(results.strip().split("@@@")[1:]):
-        logging.info(f"Iterating... Race No. {race_num}")
-        logging.info(data)
-        logging.info(f"Processing race {race_num + 1}")
+        print(f"Iterating... Race No. {race_num}")
+        print(data)
+        print(f"Processing race {race_num + 1}")
         win_odds, place_odds = data.split("#")
 
         for win_match, place_match in zip(
