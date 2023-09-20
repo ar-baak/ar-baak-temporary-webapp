@@ -144,6 +144,7 @@ class HKJCOdds:
     place_fav: bool = False
 
 
+@st.cache_data(ttl="10s")
 def fetch_from_hkjc(url: str, data: Optional[Dict] = None):
     with httpx.Client() as sess:
         res = sess.get(HKJC_BASE_URL)
@@ -179,6 +180,7 @@ def replace_hkjc_text(text: str) -> str:
     )
 
 
+@st.cache_data(ttl="10s")
 def clean_meeting_response(text: str) -> Dict:
     """Clean meeting javascript responses
 
@@ -212,6 +214,7 @@ def clean_meeting_response(text: str) -> Dict:
     return data_dict
 
 
+@st.cache_data(ttl="10s")
 def get_meeting_today() -> Dict:
     _ = 0
     while True:
@@ -235,6 +238,7 @@ def get_meeting_today() -> Dict:
     return response
 
 
+@st.cache_data(ttl="10s")
 def get_racecard_today(race_no: int, venue: str) -> List[Dict]:
     """Clean racecard javascript responses
 
@@ -268,6 +272,7 @@ def get_racecard_today(race_no: int, venue: str) -> List[Dict]:
     return responses
 
 
+@st.cache_data(ttl="10s")
 def get_all_racecard_today(
     venue: str, total_ran_race: int, total_race: int
 ) -> List[List[Dict]]:
@@ -295,6 +300,7 @@ def get_all_racecard_today(
     return racecards
 
 
+@st.cache_data(ttl="10s")
 def process_hkjc_response(results: str) -> List[HKJCOdds]:
     all_odds = []
 
@@ -336,6 +342,7 @@ def process_hkjc_response(results: str) -> List[HKJCOdds]:
     return all_odds
 
 
+@st.cache_data(ttl="10s")
 def get_race_odds_today(venue: str, start_race: int, end_race: int):
     hkjc_odds_url = URL_HKJC_WPO.format(
         date=TODAY, venue=venue, start_race=start_race, end_race=end_race
@@ -394,6 +401,7 @@ def parse_ctb988_datetime(datestring: str) -> Optional[datetime]:
     return datetime.strptime(datestring, "%d-%m-%Y")
 
 
+@st.cache_data(ttl="10s")
 def message_template_factory(
     date: str,
     location: str,
@@ -432,6 +440,7 @@ def message_template_factory(
     }
 
 
+@st.cache_data(ttl="10s")
 def parse_ctb988_response(response_text: str) -> None:
     """
     Parse the CTB988 response.
