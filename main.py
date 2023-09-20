@@ -500,7 +500,7 @@ def main():
     df_race_odds = pd.DataFrame(race_odds)
 
     df_hkjc = pd.merge(
-        left=df_racecard[~df_racecard["is_scratched"]],
+        left=df_racecard[~df_racecard["scratched"]],
         right=df_race_odds,
         on=["race_num", "num"],
         how="left",
