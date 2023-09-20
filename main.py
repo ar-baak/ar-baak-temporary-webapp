@@ -529,13 +529,6 @@ def main():
     df_hkjc["騎"] = df_hkjc["騎"].map(JOCKEY_MAPPING)
     df_hkjc["練"] = df_hkjc["練"].map(TRAINER_MAPPING)
 
-    bet_response = fetch_ctb_data(
-        URL_MAPPING[Mode.BET].format(location="3H", date=TODAY),
-        callback_function=parse_ctb988_response,
-    )
-
-    df_ctb_bet = pd.DataFrame(bet_response)
-
     lay_response = fetch_ctb_data(
         URL_MAPPING[Mode.EAT].format(location="3H", date=TODAY),
         callback_function=parse_ctb988_response,
@@ -545,29 +538,6 @@ def main():
 
     df_bet = pd.merge(
         left=df_hkjc,
-        right=df_ctb_bet,
-        left_on=["場", "號"],
-        right_on=["race", "horse"],
-        how="left",
-    )[
-        [
-            "場",
-            "號",
-            "馬",
-            "騎",
-            "練",
-            "WIN",
-            "PLA",
-            # "WIN熱",
-            # "PLA熱",
-            "win_discount",
-            "place_discount",
-        ]
-    ]
-    df_bet = df_bet.rename({"win_discount": "WIN賭折", "place_discount": "PLA賭折"}, axis=1)
-
-    df_bet = pd.merge(
-        left=df_bet,
         right=df_ctb_lay,
         left_on=["場", "號"],
         right_on=["race", "horse"],
@@ -583,13 +553,11 @@ def main():
             "PLA",
             # "WIN熱",
             # "PLA熱",
-            "WIN賭折",
-            "PLA賭折",
             "win_discount",
             "place_discount",
         ]
     ]
-    df_bet = df_bet.rename({"win_discount": "WIN吃折", "place_discount": "PLA吃折"}, axis=1)
+    df_bet = df_bet.rename({"win_discount": "WIN折", "place_discount": "PLA折"}, axis=1)
 
     st.markdown(df_bet.to_html(index=False), unsafe_allow_html=True)
 
