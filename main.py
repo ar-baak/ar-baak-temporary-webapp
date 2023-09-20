@@ -496,19 +496,20 @@ def main():
         venue=venue, total_ran_race=total_ran_race, total_race=total_race
     )
 
-    race_odds = get_race_odds_today(
-        venue=venue, start_race=total_ran_race + 1, end_race=total_race
-    )
+    # race_odds = get_race_odds_today(
+    #     venue=venue, start_race=total_ran_race + 1, end_race=total_race
+    # )
 
     df_racecard = pd.concat(pd.DataFrame(_) for _ in racecards)
-    df_race_odds = pd.DataFrame(race_odds)
+    # df_race_odds = pd.DataFrame(race_odds)
 
-    df_hkjc = pd.merge(
-        left=df_racecard[(~df_racecard["scratched"])],
-        right=df_race_odds,
-        on=["race_num", "num"],
-        how="left",
-    )
+    df_hkjc = df_racecard[(~df_racecard["scratched"])]
+    # df_hkjc = pd.merge(
+    #     left=df_racecard[(~df_racecard["scratched"])],
+    #     right=df_race_odds,
+    #     on=["race_num", "num"],
+    #     how="left",
+    # )
     # df_hkjc = df_hkjc[["race_num", "num", "name", "jockeyName", "trainerName"]]
     df_hkjc = df_hkjc.rename(
         {
@@ -517,10 +518,10 @@ def main():
             "name": "馬",
             "jockeyName": "騎",
             "trainerName": "練",
-            "win": "WIN",
-            "place": "PLA",
-            "win_fav": "WIN熱",
-            "place_fav": "PLA熱",
+            # "win": "WIN",
+            # "place": "PLA",
+            # "win_fav": "WIN熱",
+            # "place_fav": "PLA熱",
         },
         axis=1,
     )
@@ -554,8 +555,8 @@ def main():
             "馬",
             "騎",
             "練",
-            "WIN",
-            "PLA",
+            # "WIN",
+            # "PLA",
             # "WIN熱",
             # "PLA熱",
             "win_discount",
@@ -577,8 +578,8 @@ def main():
             "馬",
             "騎",
             "練",
-            "WIN",
-            "PLA",
+            # "WIN",
+            # "PLA",
             # "WIN熱",
             # "PLA熱",
             "WIN賭折",
