@@ -298,12 +298,13 @@ def get_all_racecard_today(
 def process_hkjc_response(results: str) -> List[HKJCOdds]:
     all_odds = []
 
-    print("Full Results:")
-    print(results)
     for race_num, data in enumerate(results.strip().split("@@@")[1:]):
-        print(f"Iterating... Race No. {race_num}")
-        print(data)
-        print(f"Processing race {race_num + 1}")
+        logging.info(f"Processing race {race_num + 1}")
+
+        if "#" not in data:
+            logging.info(f"No odds for race {race_num + 1}")
+            continue
+
         win_odds, place_odds = data.split("#")
 
         for win_match, place_match in zip(
@@ -496,20 +497,20 @@ def main():
         venue=venue, total_ran_race=total_ran_race, total_race=total_race
     )
 
-    # race_odds = get_race_odds_today(
-    #     venue=venue, start_race=total_ran_race + 1, end_race=total_race
-    # )
+    race_odds = get_race_odds_today(
+        venue=venue, start_race=total_ran_race + 1, end_race=total_race
+    )
 
     df_racecard = pd.concat(pd.DataFrame(_) for _ in racecards)
-    # df_race_odds = pd.DataFrame(race_odds)
+    df_race_odds = pd.DataFrame(race_odds)
 
     df_hkjc = df_racecard[(~df_racecard["scratched"])]
-    # df_hkjc = pd.merge(
-    #     left=df_racecard[(~df_racecard["scratched"])],
-    #     right=df_race_odds,
-    #     on=["race_num", "num"],
-    #     how="left",
-    # )
+    df_hkjc = pd.merge(
+        left=df_racecard[(~df_racecard["scratched"])],
+        right=df_race_odds,
+        on=["race_num", "num"],
+        how="left",
+    )
     # df_hkjc = df_hkjc[["race_num", "num", "name", "jockeyName", "trainerName"]]
     df_hkjc = df_hkjc.rename(
         {
@@ -518,8 +519,8 @@ def main():
             "name": "馬",
             "jockeyName": "騎",
             "trainerName": "練",
-            # "win": "WIN",
-            # "place": "PLA",
+            "win": "WIN",
+            "place": "PLA",
             # "win_fav": "WIN熱",
             # "place_fav": "PLA熱",
         },
@@ -555,8 +556,8 @@ def main():
             "馬",
             "騎",
             "練",
-            # "WIN",
-            # "PLA",
+            "WIN",
+            "PLA",
             # "WIN熱",
             # "PLA熱",
             "win_discount",
@@ -578,8 +579,8 @@ def main():
             "馬",
             "騎",
             "練",
-            # "WIN",
-            # "PLA",
+            "WIN",
+            "PLA",
             # "WIN熱",
             # "PLA熱",
             "WIN賭折",
@@ -592,7 +593,6 @@ def main():
 
     st.markdown(df_bet.to_html(index=False), unsafe_allow_html=True)
 
-    # for _ in race_odds:
     return
 
 
