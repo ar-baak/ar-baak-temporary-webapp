@@ -521,7 +521,6 @@ def main():
     )
 
     df_racecard = pd.concat(pd.DataFrame(_) for _ in racecards)
-    st.dataframe(df_racecard)
     df_race_odds = pd.DataFrame(race_odds, columns=["race_num", "num", "win", "place"])
 
     df_hkjc = df_racecard[(~df_racecard["scratched"])]
