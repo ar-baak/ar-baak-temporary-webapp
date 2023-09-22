@@ -233,13 +233,13 @@ def get_meeting_today() -> Dict:
 
     if response["mtg_date"].date() != TODAY.date():
         logging.info("Races are not on today!")
-        return None
+        # return None
 
     return response
 
 
 @st.cache_data(ttl="10s")
-def get_racecard_today(race_no: int, venue: str) -> List[Dict]:
+def get_racecard(race_no: int, venue: str, date: datetime) -> List[Dict]:
     """Clean racecard javascript responses
 
     Args:
@@ -250,7 +250,7 @@ def get_racecard_today(race_no: int, venue: str) -> List[Dict]:
         racecard
     """
     response = fetch_from_hkjc(
-        url=RACECARD_URL.format(date=TODAY, venue=venue, race_no=race_no)
+        url=RACECARD_URL.format(date=date, venue=venue, race_no=race_no)
     )
 
     text = replace_hkjc_text(response.text)
@@ -273,8 +273,8 @@ def get_racecard_today(race_no: int, venue: str) -> List[Dict]:
 
 
 @st.cache_data(ttl="10s")
-def get_all_racecard_today(
-    venue: str, total_ran_race: int, total_race: int
+def get_all_racecards(
+    venue: str, total_ran_race: int, total_race: int, date: datetime
 ) -> List[List[Dict]]:
     racecards = []
 
@@ -290,7 +290,7 @@ def get_all_racecard_today(
             if _ < 3:
                 _ += 1
                 try:
-                    racecards.append(get_racecard_today(race_no=i, venue=venue))
+                    racecards.append(get_racecard(race_no=i, venue=venue, date=date))
                     break
                 except IndexError:
                     logging.info("Retrying")
@@ -343,9 +343,9 @@ def process_hkjc_response(results: str) -> List[HKJCOdds]:
 
 
 @st.cache_data(ttl="10s")
-def get_race_odds_today(venue: str, start_race: int, end_race: int):
+def get_race_odds(venue: str, start_race: int, end_race: int, date: datetime):
     hkjc_odds_url = URL_HKJC_WPO.format(
-        date=TODAY, venue=venue, start_race=start_race, end_race=end_race
+        date=date, venue=venue, start_race=start_race, end_race=end_race
     )
     response = fetch_from_hkjc(hkjc_odds_url)
     hkjc_odds = process_hkjc_response(response.text)
@@ -501,17 +501,28 @@ def main():
     total_race = meeting["mtg_total_race"]
     total_ran_race = meeting["mtg_ran_race"]
     venue = meeting["venue_short"]
+    meeting_date = meeting["mtg_date"]
+    pool_status = meeting["pool_status_by_race"]
+    race_post_time = meeting["race_post_time"]
+    race_details = meeting["race_header_info_c_h"]
 
-    racecards = get_all_racecard_today(
-        venue=venue, total_ran_race=total_ran_race, total_race=total_race
+    racecards = get_all_racecards(
+        venue=venue,
+        total_ran_race=total_ran_race,
+        total_race=total_race,
+        date=meeting_date,
     )
 
-    race_odds = get_race_odds_today(
-        venue=venue, start_race=total_ran_race + 1, end_race=total_race
+    race_odds = get_race_odds(
+        venue=venue,
+        start_race=total_ran_race + 1,
+        end_race=total_race,
+        date=meeting_date,
     )
 
     df_racecard = pd.concat(pd.DataFrame(_) for _ in racecards)
-    df_race_odds = pd.DataFrame(race_odds)
+    st.dataframe(df_racecard)
+    df_race_odds = pd.DataFrame(race_odds, columns=["race_num", "num", "win", "place"])
 
     df_hkjc = df_racecard[(~df_racecard["scratched"])]
     df_hkjc = pd.merge(
@@ -539,10 +550,9 @@ def main():
     df_hkjc["練"] = df_hkjc["練"].map(TRAINER_MAPPING)
 
     lay_response = fetch_ctb_data(
-        URL_MAPPING[Mode.EAT].format(location="3H", date=TODAY),
+        URL_MAPPING[Mode.EAT].format(location="3H", date=meeting_date),
         callback_function=parse_ctb988_response,
     )
-
     df_ctb_lay = pd.DataFrame(lay_response)
 
     df_bet = pd.merge(
@@ -568,7 +578,18 @@ def main():
     ]
     df_bet = df_bet.rename({"win_discount": "WIN折", "place_discount": "PLA折"}, axis=1)
 
-    st.markdown(df_bet.to_html(index=False), unsafe_allow_html=True)
+    first = True
+    for race, _df in df_bet.groupby("場"):
+        with st.expander(
+            # label=f"第 {race} 場 - {race_post_time[race]:%Y-%m-%d %H:%M}",
+            label=" ".join(race_details[race].values()),
+            expanded=first,
+        ):
+            # st.write(" ".join(race_details[race].values()))
+            st.markdown(_df.to_html(index=False), unsafe_allow_html=True)
+
+        if first:
+            first = False
 
     return
 
