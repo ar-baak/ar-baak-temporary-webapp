@@ -300,7 +300,7 @@ def get_all_racecards(
     return racecards
 
 
-@st.cache_data(ttl="10s")
+# @st.cache_data(ttl="10s")
 def process_hkjc_response(results: str) -> List[HKJCOdds]:
     all_odds = []
 
@@ -342,7 +342,7 @@ def process_hkjc_response(results: str) -> List[HKJCOdds]:
     return all_odds
 
 
-@st.cache_data(ttl="10s")
+# @st.cache_data(ttl="10s")
 def get_race_odds(venue: str, start_race: int, end_race: int, date: datetime):
     hkjc_odds_url = URL_HKJC_WPO.format(
         date=date, venue=venue, start_race=start_race, end_race=end_race
