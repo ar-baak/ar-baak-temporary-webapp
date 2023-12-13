@@ -1,5 +1,5 @@
-httpx
-pandas
-streamlit
-pytz
-lxml
+httpx==0.25.2
+pandas==2.1.2
+streamlit==1.28.2
+pytz==2023.3.post1
+lxml==4.9.3
