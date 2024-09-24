@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Literal, Optional
 from pydantic import BaseModel, field_validator
 
@@ -57,12 +58,21 @@ class Race(BaseModel):
     status: str
     raceName_en: Optional[str]
     raceName_ch: Optional[str]
-    postTime: Optional[str]
+    postTime: Optional[datetime]
     distance: Optional[int]
     wageringFieldSize: Optional[int]
     raceTrack: Optional[RaceTrack]
     raceCourse: Optional[RaceCourse]
     runners: List[Runner]
+
+    @field_validator("postTime", mode="before")
+    def validate_date_field(cls, value):
+        if value == "" or value is None:
+            return None
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return None
 
 
 class Pool(BaseModel):
@@ -81,6 +91,15 @@ class Meeting(BaseModel):
     venueCode: str
     totalNumberOfRace: int
     currentNumberOfRace: int
-    date: str
+    date: datetime
     races: List[Race]
     pools: List[Pool]
+
+    @field_validator("date", mode="before")
+    def validate_date_field(cls, value):
+        if value == "" or value is None:
+            return None
+        try:
+            return datetime.strptime(value, "%Y-%m-%d")
+        except ValueError:
+            return None
