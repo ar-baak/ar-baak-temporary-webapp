@@ -81,7 +81,7 @@ def display_race_columns(race, df_ctb: pd.DataFrame):
     """Display each horse in a markdown table layout using Streamlit with mobile responsiveness."""
 
     st.markdown(f"### 第 {race.no} 場: {race.raceName_ch}")
-    st.markdown(f"**開跑時間:** {race.postTime}")
+    st.markdown(f"**開跑時間:** {race.postTime:%Y-%m-%d %H:%M}")
 
     # Build the markdown table header for mobile-friendly view
     table_header = "|  | 馬 | 騎 | 練 | W | W折 | P | P折 |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n"
