@@ -3,7 +3,7 @@ from enum import Enum
 import io
 import json
 import re
-from typing import Dict, List
+from typing import Callable, Dict, List
 import httpx
 import streamlit as st
 
@@ -85,7 +85,7 @@ CTB_KEY_PATTERN: re.Pattern = re.compile(
 )
 
 
-def fetch_ctb_data(url: str, callback_function: callable) -> None:
+def fetch_ctb_data(url: str, callback_function: Callable) -> List[Dict]:
     """Fetch CTB data from the specified URL."""
     with httpx.Client(timeout=httpx.Timeout(3.0)) as client:
         response = client.get(url=url)
