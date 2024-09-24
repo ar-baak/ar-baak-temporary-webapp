@@ -1,7 +1,6 @@
 from typing import Optional
 import pandas as pd
 import streamlit as st
-from datetime import datetime
 from services.race_data import fetch_race_meetings, process_meeting_response
 from services.odds_processing import (
     fetch_odds_from_graphql,
@@ -9,8 +8,8 @@ from services.odds_processing import (
     process_odds_response,
     merge_races_with_odds,
 )
-from utils.time_utils import get_today_gmt8, get_today_gmt8_str
-from models.race_models import Meeting, Race
+from utils.time_utils import get_today_gmt8_str
+from models.race_models import Meeting
 
 # Mappings for jockeys and trainers
 JOCKEY_MAPPING = {
@@ -98,13 +97,16 @@ def display_race_columns(race, df_ctb: pd.DataFrame):
         win_discount, place_discount = "N/A", "N/A"
 
         if not df_ctb.empty and all(
-            col in df_ctb.columns for col in ["race", "horse", "WIN折", "PLA折"]
+            col in df_ctb.columns
+            for col in ["race", "horse", "win_discount", "place_discount"]
         ):
             win_discount_values = df_ctb.loc[
-                (df_ctb["race"] == race.no) & (df_ctb["horse"] == runner.no), "WIN折"
+                (df_ctb["race"] == race.no) & (df_ctb["horse"] == runner.no),
+                "win_discount",
             ].values
             place_discount_values = df_ctb.loc[
-                (df_ctb["race"] == race.no) & (df_ctb["horse"] == runner.no), "PLA折"
+                (df_ctb["race"] == race.no) & (df_ctb["horse"] == runner.no),
+                "place_discount",
             ].values
 
             win_discount = (
@@ -149,7 +151,6 @@ def main():
 
     # Fetch race meeting details
     venue = "ST"
-    today = get_today_gmt8()
     today_str = get_today_gmt8_str()
 
     race_data = fetch_race_meetings(date=today_str, venue=venue)
@@ -164,7 +165,7 @@ def main():
         merge_races_with_odds(meeting_info.races, odds_map, race_no=race.no)
 
     # Fetch CTB data and merge
-    df_ctb = get_ctb_data(today)
+    df_ctb = get_ctb_data(meeting_info.date)
 
     # Display selected race details in tabs
     display_race_tabs(meeting_info, df_ctb)
