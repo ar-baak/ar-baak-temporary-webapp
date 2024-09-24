@@ -132,7 +132,6 @@ def display_race_columns(race, df_ctb: pd.DataFrame):
 
     # Combine header and rows into a full table
     full_table = table_header + table_rows
-    print(full_table)
     # Render the table as markdown
     st.markdown(full_table)
 
