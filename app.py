@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 import pandas as pd
 import streamlit as st
 from services.race_data import fetch_race_meetings, process_meeting_response
@@ -8,7 +8,6 @@ from services.odds_processing import (
     process_odds_response,
     merge_races_with_odds,
 )
-from utils.time_utils import get_today_gmt8_str
 from models.race_models import Meeting, Race
 
 # Mappings for jockeys and trainers
@@ -151,32 +150,58 @@ def display_race_tabs(meeting_info: Meeting, df_ctb: pd.DataFrame):
             display_race_columns(race, df_ctb)
 
 
+def display_meeting_selection(meetings: List[Meeting]):
+    """Display a dropdown for users to select a meeting."""
+    if not meetings:
+        st.write("No meetings available.")
+        return None
+
+    # Create a list of meeting names (using date, venue, etc.)
+    meeting_names = [
+        f"{meeting.date:%Y-%m-%d} - {meeting.country_name()}" for meeting in meetings
+    ]
+
+    # Let users select a meeting from a dropdown
+    selected_meeting_name = st.selectbox("Select a Race Meeting:", meeting_names)
+
+    # Find and return the selected meeting
+    for meeting in meetings:
+        if (
+            f"{meeting.date:%Y-%m-%d} - {meeting.country_name()}"
+            == selected_meeting_name
+        ):
+            return meeting
+
+    return None
+
+
 # Main function
 def main():
     st.title("Ar Baak Bet Horse")
 
     # Fetch race meeting details
-    venue = "ST"
-    today_str = get_today_gmt8_str()
 
-    race_data = fetch_race_meetings(date=today_str, venue=venue)
-    meeting_info = process_meeting_response(race_data)
-    if meeting_info is None:
-        return
+    race_data = fetch_race_meetings()
+    meetings = process_meeting_response(race_data)
+    selected_meeting = display_meeting_selection(meetings)
 
     # Fetch odds data for the selected race and merge into race data
-    for race in meeting_info.races:
-        odds_data = fetch_odds_from_graphql(
-            date=today_str, venue=venue, race_no=race.no, odds_types=["WIN", "PLA"]
-        )
-        odds_map = process_odds_response(odds_data)
-        merge_races_with_odds(meeting_info.races, odds_map, race_no=race.no)
+    if selected_meeting:
+        for race in selected_meeting.races:
+            odds_data = fetch_odds_from_graphql(
+                date=selected_meeting.date.strftime("%Y-%m-%d"),
+                venue=selected_meeting.venueCode,
+                race_no=race.no,
+                odds_types=["WIN", "PLA"],
+            )
+            odds_map = process_odds_response(odds_data)
+            merge_races_with_odds(selected_meeting.races, odds_map, race_no=race.no)
 
-    # Fetch CTB data and merge
-    df_ctb = get_ctb_data(meeting_info.date)
+        # Fetch CTB data and merge
+        df_ctb = get_ctb_data(selected_meeting.date)
 
-    # Display selected race details in tabs
-    display_race_tabs(meeting_info, df_ctb)
+        # Display selected race details in tabs
+        display_race_tabs(selected_meeting, df_ctb)
 
 
 if __name__ == "__main__":

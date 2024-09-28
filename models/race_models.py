@@ -3,6 +3,13 @@ from typing import List, Literal, Optional
 from pydantic import BaseModel, field_validator
 
 
+class Country(BaseModel):
+    code: str
+    namech: str
+    nameen: str
+    seq: str
+
+
 class RaceTrack(BaseModel):
     description_en: Optional[str]
     description_ch: Optional[str]
@@ -95,6 +102,8 @@ class Meeting(BaseModel):
     totalNumberOfRace: int
     currentNumberOfRace: int
     date: datetime
+    meetingType: Optional[str]
+    country: Optional[Country]
     races: List[Race]
     pools: List[Pool]
 
@@ -106,3 +115,12 @@ class Meeting(BaseModel):
             return datetime.strptime(value, "%Y-%m-%d")
         except ValueError:
             return None
+
+    def country_name(self, lang: Literal["ch", "en"] = "ch") -> str:
+        if self.country:
+            return getattr(self.country, f"name{lang}")
+        match lang:
+            case "ch":
+                return "香港"
+            case "en":
+                return "Hong Kong"

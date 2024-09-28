@@ -20,7 +20,7 @@ def send_graphql_query(payload: Dict) -> Dict:
         return {}
 
 
-def build_meeting_payload(date: str, venue: str) -> Dict:
+def build_meeting_payload() -> Dict:
     """Builds the payload for the GraphQL POST request to get race meeting info."""
     query = """
     fragment raceFragment on Race {
@@ -316,8 +316,8 @@ def build_meeting_payload(date: str, venue: str) -> Dict:
     return {
         "operationName": "racing",
         "variables": {
-            "date": date,
-            "venueCode": venue,
+            "date": "",
+            "venueCode": "",
             "foOddsTypes": [],
             "foFilter": ["top"],
             "resultOddsType": [],
