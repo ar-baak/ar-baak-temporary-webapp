@@ -9,7 +9,7 @@ from services.odds_processing import (
     merge_races_with_odds,
 )
 from utils.time_utils import get_today_gmt8_str
-from models.race_models import Meeting
+from models.race_models import Meeting, Race
 
 # Mappings for jockeys and trainers
 JOCKEY_MAPPING = {
@@ -35,6 +35,8 @@ JOCKEY_MAPPING = {
     "巫顯東": "東",
     "賀銘年": "賀",
     "嘉里": "里",
+    "黃寶妮": "妮",
+    "湯普新": "湯",
 }
 
 TRAINER_MAPPING = {
@@ -77,7 +79,7 @@ def highlight_favorites(odds: Optional[float], is_favorite: bool) -> str:
     return str(odds if odds is not None else "N/A")
 
 
-def display_race_columns(race, df_ctb: pd.DataFrame):
+def display_race_columns(race: Race, df_ctb: pd.DataFrame):
     """Display each horse in a markdown table layout using Streamlit with mobile responsiveness."""
 
     st.markdown(f"### 第 {race.no} 場: {race.raceName_ch}")
@@ -121,9 +123,9 @@ def display_race_columns(race, df_ctb: pd.DataFrame):
         trainer_name = map_trainer_name(runner.trainer_name_ch)
 
         # Safely handle NoneType values for odds
-        win_odds = f"{runner.winOdds:.2f}" if runner.winOdds is not None else "N/A"
+        win_odds = f"{runner.winOdds:.1f}" if runner.winOdds is not None else "N/A"
         place_odds = (
-            f"{runner.placeOdds:.2f}" if runner.placeOdds is not None else "N/A"
+            f"{runner.placeOdds:.1f}" if runner.placeOdds is not None else "N/A"
         )
 
         # Create a table row for each horse
