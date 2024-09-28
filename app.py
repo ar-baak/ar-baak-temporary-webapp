@@ -130,7 +130,11 @@ def display_race_columns(race: Race, df_ctb: pd.DataFrame):
         )
 
         # Create a table row for each horse
-        row = f"| {runner.no} | {runner.name_ch[:3]}{'...' if len(runner.name_ch) > 3 else ''} | {jockey_name} | {trainer_name} | {win_odds} | {win_discount} | {place_odds} | {place_discount} |\n"
+        row = (
+            f"| {runner.no} | {runner.name_ch[:3]}{'...' if len(runner.name_ch) > 3 else ''}"
+            f" | {jockey_name} | {trainer_name} | {win_odds} | {win_discount} | "
+            f"{place_odds} | {place_discount} |\n"
+        )
         table_rows += row
 
     # Combine header and rows into a full table
@@ -157,13 +161,15 @@ def main():
 
     race_data = fetch_race_meetings(date=today_str, venue=venue)
     meeting_info = process_meeting_response(race_data)
+    if meeting_info is None:
+        return
 
     # Fetch odds data for the selected race and merge into race data
     for race in meeting_info.races:
         odds_data = fetch_odds_from_graphql(
             date=today_str, venue=venue, race_no=race.no, odds_types=["WIN", "PLA"]
         )
-        odds_map = process_odds_response(odds_data, race_no=race.no)
+        odds_map = process_odds_response(odds_data)
         merge_races_with_odds(meeting_info.races, odds_map, race_no=race.no)
 
     # Fetch CTB data and merge

@@ -21,9 +21,9 @@ def fetch_odds_from_graphql(
     return send_graphql_query(payload)
 
 
-def process_odds_response(response: Dict, race_no: int) -> Dict[int, Dict[str, float]]:
+def process_odds_response(response: Dict) -> Dict[int, Dict[str, float]]:
     """Process the odds response and return a dictionary of runner odds for the specified race."""
-    odds_map = {}
+    odds_map: Dict[int, Dict[str, float]] = {}
 
     if not response or "data" not in response:
         logger.error("Invalid odds response or no data")

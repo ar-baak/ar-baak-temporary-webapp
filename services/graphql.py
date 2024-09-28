@@ -12,11 +12,11 @@ def send_graphql_query(payload: Dict) -> Dict:
             response = client.post(GRAPHQL_ENDPOINT, json=payload)
             response.raise_for_status()
             return response.json()
-    except httpx.HTTPStatusError as e:
-        logger.error(f"HTTP error occurred: {e}")
+    except httpx.HTTPStatusError as err:
+        logger.error(f"HTTP error occurred: {err}")
         return {}
-    except Exception as e:
-        logger.error(f"Failed to fetch data: {e}")
+    except Exception as err:  # pylint: disable=broad-exception-caught
+        logger.error(f"Failed to fetch data: {err}")
         return {}
 
 

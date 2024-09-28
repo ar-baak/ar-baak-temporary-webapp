@@ -1,5 +1,4 @@
-import streamlit as st
-from typing import Dict
+from typing import Dict, Optional
 from services.graphql import send_graphql_query, build_meeting_payload
 from models.race_models import Meeting, Pool, Race, RaceCourse, RaceTrack, Runner
 from utils.logger import logger
@@ -11,11 +10,11 @@ def fetch_race_meetings(date: str, venue: str) -> Dict:
     return send_graphql_query(payload)
 
 
-def process_meeting_response(response: Dict) -> Meeting:
+def process_meeting_response(response: Dict) -> Optional[Meeting]:
     """Process the GraphQL race meeting response and return structured data."""
     if not response or "data" not in response:
         logger.error("Invalid response or no data")
-        return {}
+        return None
 
     race_meeting_data = response["data"]["raceMeetings"][0]
 
