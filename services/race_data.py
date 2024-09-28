@@ -11,32 +11,6 @@ def fetch_race_meetings(date: str, venue: str) -> Dict:
     return send_graphql_query(payload)
 
 
-def calculate_odds(
-    total_investment: float, runner_investment: float, track_takeout: float = 0.15
-) -> float:
-    """
-    Calculate the odds for a runner based on total pool investment and investment on the runner.
-
-    Args:
-        total_investment: The total pool investment for the race.
-        runner_investment: The amount bet on the specific runner.
-        track_takeout: The percentage taken by the track (default is 15%).
-
-    Returns:
-        The calculated odds for the runner.
-    """
-    # Ensure runner_investment is not 0 to avoid division by zero
-    if runner_investment == 0:
-        return 0.0
-
-    # Adjust the total investment by removing the track takeout
-    available_pool = total_investment * (1 - track_takeout)
-
-    # Calculate the odds
-    odds = (available_pool / runner_investment) - 1
-    return round(odds, 2)
-
-
 def process_meeting_response(response: Dict) -> Meeting:
     """Process the GraphQL race meeting response and return structured data."""
     if not response or "data" not in response:
@@ -54,19 +28,8 @@ def process_meeting_response(response: Dict) -> Meeting:
     races = []
     for race in race_meeting_data["races"]:
         runners = []
-        total_investment = None
-        for pool in race_meeting_data.get("poolInvs", []):
-            if pool["oddsType"] == "WIN":
-                total_investment = pool["investment"]
-                break
 
         for runner_data in race["runners"]:
-            winOdds = None
-            if total_investment and runner_data.get("winOdds"):
-                winOdds = calculate_odds(
-                    total_investment=total_investment,
-                    runner_investment=float(runner_data["winOdds"]),
-                )
 
             runner = Runner(
                 id=runner_data["id"],
@@ -82,10 +45,9 @@ def process_meeting_response(response: Dict) -> Meeting:
                 jockey_name_ch=runner_data["jockey"]["name_ch"],
                 trainer_name_en=runner_data["trainer"]["name_en"],
                 trainer_name_ch=runner_data["trainer"]["name_ch"],
-                winOdds=winOdds,
+                winOdds=runner_data["winOdds"],
             )
             runners.append(runner)
-
         race_obj = Race(
             id=race["id"],
             no=race["no"],
@@ -124,7 +86,7 @@ def process_meeting_response(response: Dict) -> Meeting:
         venueCode=race_meeting_data["venueCode"],
         totalNumberOfRace=race_meeting_data["totalNumberOfRace"],
         currentNumberOfRace=race_meeting_data["currentNumberOfRace"],
-        date=meeting_date,  # Add date here
+        date=meeting_date,
         races=races,
         pools=pools,
     )
