@@ -18,7 +18,7 @@ class Runner(BaseModel):
     id: str
     no: Optional[int]
     standbyNo: Optional[int]
-    status: Literal["Standby", "Declared", "Withdrawn"]
+    status: Literal["Standby", "Declared", "Withdrawn", "Ran", "Scratched"]
     name_ch: str
     name_en: str
     horse_id: str
@@ -28,12 +28,12 @@ class Runner(BaseModel):
     jockey_name_ch: Optional[str]
     trainer_name_en: Optional[str]
     trainer_name_ch: Optional[str]
-    winOdds: Optional[float]
+    winOdds: Optional[float] = None
     placeOdds: Optional[float] = None
 
     @field_validator("winOdds", "placeOdds", mode="before")
-    def validate_win_odds(cls, value):
-        if value == "" or value is None:
+    def validate_win_odds(cls, value) -> Optional[float]:
+        if value in ("", "SCR", None):
             return None
         try:
             return float(value)
@@ -43,13 +43,16 @@ class Runner(BaseModel):
     @field_validator(
         "no", "barrierDrawNumber", "handicapWeight", "standbyNo", mode="before"
     )
-    def validate_int_field(cls, value):
-        if value == "" or value is None:
+    def validate_int_field(cls, value) -> Optional[float]:
+        if value in ("", "SCR", None):
             return None
         try:
             return int(value)
         except ValueError:
             return None
+
+    class Config:
+        validate_assignment = True
 
 
 class Race(BaseModel):
