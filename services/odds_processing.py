@@ -38,7 +38,7 @@ def process_odds_response(response: Dict, race_no: int) -> Dict[int, Dict[str, f
 
             for odds_node in odds_nodes:
                 comb_string = odds_node["combString"]  # Runner number
-                odds_value = float(odds_node["oddsValue"])
+                odds_value = odds_node["oddsValue"]
 
                 # Convert comb_string to runner number
                 runner_num = int(comb_string)
